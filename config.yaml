@@ -1,0 +1,77 @@
+# Reddit Comment Bot Configuration
+# Topics and subreddits to monitor and comment on
+
+# Subreddits to monitor (without r/ prefix)
+subreddits:
+  - learnpython
+  - Python
+  - webdev
+
+# Topics to engage with - posts matching these will be considered for commenting
+# Each topic has keywords (for relevance matching) and optional comment guidance
+topics:
+  - name: "Python debugging"
+    keywords:
+      - "debug"
+      - "debugging"
+      - "error"
+      - "traceback"
+      - "bug"
+      - "not working"
+    comment_guidance: "Offer helpful debugging tips. Be concise and actionable."
+    # Optional: templates for template mode (use {insight} placeholder)
+    templates:
+      - "Have you tried adding print statements to narrow down where it fails? {insight}"
+      - "Check if the error message gives you a line number - that's usually where to start. {insight}"
+
+  - name: "Web development"
+    keywords:
+      - "react"
+      - "django"
+      - "flask"
+      - "frontend"
+      - "backend"
+      - "api"
+    comment_guidance: "Share relevant experience or resources. Be helpful, not promotional."
+
+  - name: "Career advice"
+    keywords:
+      - "career"
+      - "job"
+      - "interview"
+      - "salary"
+      - "transition"
+    comment_guidance: "Provide genuine advice based on experience. Avoid generic platitudes."
+
+# Bot behavior settings
+settings:
+  # Minimum post score to consider (avoid low-quality posts)
+  min_post_score: 1
+  # Maximum age of post in hours (don't comment on very old posts)
+  max_post_age_hours: 24
+  # Minimum karma of post author (0 = no filter)
+  min_author_karma: 0
+  # Don't comment if post already has more than this many comments
+  max_existing_comments: 50
+  # Sort order for fetching posts: hot, new, rising, top
+  post_sort: "new"
+  # How many posts to check per subreddit per run
+  posts_per_subreddit: 25
+  # Delay between comments (seconds) - important for rate limiting
+  delay_between_comments: 300
+  # Max comments per run (safety limit)
+  max_comments_per_run: 5
+  # Skip posts where we've already commented (requires state file)
+  skip_already_commented: true
+
+# Comment generation: "template" or "openai" or "anthropic"
+# template = use templates from topic (see comment_templates below)
+# openai = use OpenAI API for contextual generation
+# anthropic = use Anthropic Claude for contextual generation
+comment_mode: "template"
+
+# Fallback templates when using template mode (use {insight} placeholder)
+comment_templates:
+  - "Great question! {insight}"
+  - "I've run into this before. {insight}"
+  - "Here's what worked for me: {insight}"
