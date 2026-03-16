@@ -2,6 +2,5 @@ praw>=7.7.0
 PyYAML>=6.0
 python-dotenv>=1.0.0
 
-# Optional - only needed for AI-generated comments
-# openai>=1.0.0      # when comment_mode: openai
-# anthropic>=0.18.0  # when comment_mode: anthropic
+# For OpenAI-generated contextual comments
+openai>=1.0.0

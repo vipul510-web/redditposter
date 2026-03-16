@@ -17,8 +17,7 @@ class Config:
     subreddits: list[str]
     topics: list[dict[str, Any]]
     settings: dict[str, Any]
-    comment_mode: str
-    comment_templates: list[str]
+    shopify_app: dict[str, Any]
 
 
 def load_config(path: Path | None = None) -> Config:
@@ -34,6 +33,5 @@ def load_config(path: Path | None = None) -> Config:
         subreddits=data.get("subreddits", []),
         topics=data.get("topics", []),
         settings=data.get("settings", {}),
-        comment_mode=data.get("comment_mode", "template"),
-        comment_templates=data.get("comment_templates", []),
+        shopify_app=data.get("shopify_app", {}),
     )

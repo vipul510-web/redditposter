@@ -185,6 +185,8 @@ def run_bot(dry_run: bool = False):
                     continue
 
                 if not comment_text or len(comment_text.strip()) < 10:
+                    if comment_text is None:
+                        print(f"  [SKIP] OpenAI assessed post as not relevant: {submission.title[:50]}...")
                     continue
 
                 # Post or simulate
