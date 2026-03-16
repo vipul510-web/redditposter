@@ -4,6 +4,9 @@
 
 subreddits:
   - aeo
+  - shopify_geeks
+  - ecommerce
+  - ShopifyeCommerce
 
 # Initial keyword filter - casts a net for potentially relevant posts
 # OpenAI then decides if the post is actually worth replying to
@@ -20,8 +23,7 @@ topics:
       - "AI platforms"
       - "AI traffic"
       - "Answer Engine"
-      - "visibility"      # Broader - catches "visibility" in AI/SEO context
-      - "rank"             # Catches "ranking" on ChatGPT/AI
+
     comment_guidance: "Give genuine insights. Subtly plug the app only when it naturally helps."
 
 # Shopify app - GPT Shopify App
