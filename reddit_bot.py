@@ -150,6 +150,10 @@ def run_bot(dry_run: bool = False):
     print(f"Max comments this run: {max_comments}")
     print("-" * 50)
 
+    posts_checked = 0
+    posts_passed_filters = 0
+    posts_matched_keywords = 0
+
     for subreddit_name in config.subreddits:
         if comments_posted >= max_comments:
             break
@@ -173,6 +177,8 @@ def run_bot(dry_run: bool = False):
                 if comments_posted >= max_comments:
                     break
 
+                posts_checked += 1
+
                 # Skip if already commented
                 if submission.id in commented_ids:
                     continue
@@ -180,11 +186,14 @@ def run_bot(dry_run: bool = False):
                 # Check filters
                 if not post_passes_filters(submission, config):
                     continue
+                posts_passed_filters += 1
 
-                # Check topic relevance
+                # Check topic relevance (keyword match)
                 topic = post_is_relevant(submission, config)
                 if not topic:
                     continue
+                posts_matched_keywords += 1
+                print(f"  [EVAL] Checking: {submission.title[:60]}...")
 
                 # Generate comment
                 try:
@@ -232,6 +241,7 @@ def run_bot(dry_run: bool = False):
 
     print("-" * 50)
     print(f"Run complete. Comments posted: {comments_posted}")
+    print(f"Summary: {posts_checked} posts checked, {posts_passed_filters} passed filters, {posts_matched_keywords} matched keywords")
 
 
 if __name__ == "__main__":

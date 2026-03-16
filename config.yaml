@@ -20,6 +20,8 @@ topics:
       - "AI platforms"
       - "AI traffic"
       - "Answer Engine"
+      - "visibility"      # Broader - catches "visibility" in AI/SEO context
+      - "rank"             # Catches "ranking" on ChatGPT/AI
     comment_guidance: "Give genuine insights. Subtly plug the app only when it naturally helps."
 
 # Shopify app - GPT Shopify App
@@ -37,8 +39,7 @@ settings:
   min_author_karma: 0
   max_existing_comments: 30
   post_sort: "new"
-  posts_per_subreddit: 1     # Recent 10 posts only
+  posts_per_subreddit: 10     # Recent 10 posts only
   delay_between_comments: 300
   max_comments_per_run: 5     # Max comments per run (safety cap)
   skip_already_commented: true
-
