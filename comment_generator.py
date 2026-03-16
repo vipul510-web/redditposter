@@ -56,7 +56,7 @@ PART 2 - COMMENT: If relevant, you must:
 Post title: {submission_title}
 Post body: {submission_body[:1000]}
 
-Respond with either SKIP or your comment. Nothing else."""
+Respond with either SKIP or your comment. Output ONLY the raw comment text - no prefix like "Comment:" or labels."""
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -68,4 +68,11 @@ Respond with either SKIP or your comment. Nothing else."""
 
     if text.upper().strip() == "SKIP":
         return None
+
+    # Strip any prefix the model might add (e.g. "Comment:", "Comment: ")
+    for prefix in ("Comment:", "Comment：", "comment:", "Comment: "):
+        if text.lower().startswith(prefix.lower()):
+            text = text[len(prefix):].strip()
+            break
+
     return text
