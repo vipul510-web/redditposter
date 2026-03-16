@@ -20,11 +20,19 @@ source .venv/bin/activate   # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Reddit API credentials
+### 2. Reddit API credentials (Web app)
+
+Reddit may no longer allow new script apps. Use a **web app** instead:
 
 1. Go to [Reddit Apps](https://www.reddit.com/prefs/apps)
-2. Create an app (choose "script" type)
-3. Note your `client_id` (under the app name) and `client_secret`
+2. Create an app → choose **"web app"**
+3. Set **redirect URI** to: `http://localhost:8080`
+4. Note your `client_id` (under the app name) and `client_secret`
+5. Add them to `.env`, then run once:
+   ```bash
+   python obtain_refresh_token.py
+   ```
+6. Add the printed `REDDIT_REFRESH_TOKEN` to your `.env`
 
 ### 3. Configure
 
@@ -91,9 +99,8 @@ You can run the bot on GitHub's servers so it works without your laptop. It runs
 2. **Add secrets** in your repo: Settings → Secrets and variables → Actions → New repository secret. Add:
    - `REDDIT_CLIENT_ID`
    - `REDDIT_CLIENT_SECRET`
-   - `REDDIT_USERNAME`
-   - `REDDIT_PASSWORD`
-   - `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` (only if using AI comment mode)
+   - `REDDIT_REFRESH_TOKEN` (from `obtain_refresh_token.py`)
+   - `OPENAI_API_KEY`
 
 3. **Adjust the schedule** in `.github/workflows/reddit-bot.yml` if needed. Default is every 4 hours:
    ```yaml

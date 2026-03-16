@@ -51,14 +51,28 @@ def save_commented_post(post_id: str, config: Config):
 
 
 def create_reddit_client() -> praw.Reddit:
-    """Create authenticated Reddit client from environment variables."""
-    return praw.Reddit(
-        client_id=os.environ["REDDIT_CLIENT_ID"],
-        client_secret=os.environ["REDDIT_CLIENT_SECRET"],
-        user_agent=f"redditcommentor:1.0 (by /u/{os.environ['REDDIT_USERNAME']})",
-        username=os.environ["REDDIT_USERNAME"],
-        password=os.environ["REDDIT_PASSWORD"],
-    )
+    """Create authenticated Reddit client. Supports web app (refresh token) or script app (username/password)."""
+    client_id = os.environ["REDDIT_CLIENT_ID"]
+    client_secret = os.environ["REDDIT_CLIENT_SECRET"]
+    refresh_token = os.environ.get("REDDIT_REFRESH_TOKEN")
+
+    if refresh_token:
+        # Web app: use refresh token (no username/password needed)
+        return praw.Reddit(
+            client_id=client_id,
+            client_secret=client_secret,
+            refresh_token=refresh_token,
+            user_agent="redditcommentor:1.0",
+        )
+    else:
+        # Script app: use username/password
+        return praw.Reddit(
+            client_id=client_id,
+            client_secret=client_secret,
+            user_agent=f"redditcommentor:1.0 (by /u/{os.environ['REDDIT_USERNAME']})",
+            username=os.environ["REDDIT_USERNAME"],
+            password=os.environ["REDDIT_PASSWORD"],
+        )
 
 
 def post_is_relevant(submission: Submission, config: Config) -> Optional[dict]:

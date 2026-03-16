@@ -44,12 +44,19 @@ def main():
     )
     args = parser.parse_args()
 
-    # Validate required env vars
-    required = ["REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET", "REDDIT_USERNAME", "REDDIT_PASSWORD"]
-    missing = [k for k in required if not os.environ.get(k)]
+    # Validate: need client_id, client_secret, and EITHER refresh_token (web app) OR username+password (script app)
+    missing = []
+    if not os.environ.get("REDDIT_CLIENT_ID"):
+        missing.append("REDDIT_CLIENT_ID")
+    if not os.environ.get("REDDIT_CLIENT_SECRET"):
+        missing.append("REDDIT_CLIENT_SECRET")
+    has_refresh = os.environ.get("REDDIT_REFRESH_TOKEN")
+    has_creds = os.environ.get("REDDIT_USERNAME") and os.environ.get("REDDIT_PASSWORD")
+    if not has_refresh and not has_creds:
+        missing.append("REDDIT_REFRESH_TOKEN (web app) OR REDDIT_USERNAME + REDDIT_PASSWORD (script app)")
     if missing:
-        print("Error: Missing required environment variables:", ", ".join(missing))
-        print("Copy .env.example to .env and fill in your Reddit API credentials.")
+        print("Error: Missing:", ", ".join(missing))
+        print("For web app: run 'python obtain_refresh_token.py' once to get REDDIT_REFRESH_TOKEN")
         sys.exit(1)
 
     if args.loop:
