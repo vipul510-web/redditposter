@@ -3,6 +3,7 @@ Reddit Comment Bot - Core logic for finding and posting contextual comments.
 """
 
 import os
+import re
 import time
 import json
 from pathlib import Path
@@ -75,17 +76,38 @@ def create_reddit_client() -> praw.Reddit:
         )
 
 
+def _phrase_matches_post(phrase: str, text_lower: str, exact_phrase: bool) -> bool:
+    """If exact_phrase: whole phrase must appear with word boundaries (not inside a longer token)."""
+    phrase = phrase.strip()
+    if not phrase:
+        return False
+    if not exact_phrase:
+        return phrase.lower() in text_lower
+
+    words = phrase.lower().split()
+    if not words:
+        return False
+    pat = r"(?<![a-z0-9])" + r"\s+".join(re.escape(w) for w in words) + r"(?![a-z0-9])"
+    return re.search(pat, text_lower) is not None
+
+
 def post_is_relevant(submission: Submission, config: Config) -> Optional[dict]:
     """
-    Check if a post is relevant to our configured topics.
-    Returns the matching topic dict if relevant, None otherwise.
+    Check if a post matches configured topic phrases.
+    Returns a copy of the topic dict with _matched_phrase set, or None.
     """
-    text = f"{submission.title} {submission.selftext}".lower()
+    text = f"{submission.title} {submission.selftext or ''}"
+    text_lower = text.lower()
+    exact = config.settings.get("exact_phrase_match", True)
 
     for topic in config.topics:
-        keywords = [k.lower() for k in topic["keywords"]]
-        if any(kw in text for kw in keywords):
-            return topic
+        for kw in topic.get("keywords", []):
+            if not isinstance(kw, str):
+                continue
+            if _phrase_matches_post(kw, text_lower, exact):
+                out = dict(topic)
+                out["_matched_phrase"] = kw.strip()
+                return out
     return None
 
 
@@ -144,10 +166,11 @@ def run_bot(dry_run: bool = False):
     comments_posted = 0
     max_comments = config.settings.get("max_comments_per_run", 5)
     delay = config.settings.get("delay_between_comments", 300)
+    max_age = timedelta(hours=config.settings.get("max_post_age_hours", 2))
 
     print(f"Starting bot run (dry_run={dry_run})")
     print(f"Subreddits: {config.subreddits}")
-    print(f"Max comments this run: {max_comments}")
+    print(f"Post window: last {config.settings.get('max_post_age_hours', 2)}h | Max comments: {max_comments}")
     print("-" * 50)
 
     posts_checked = 0
@@ -177,6 +200,10 @@ def run_bot(dry_run: bool = False):
                 if comments_posted >= max_comments:
                     break
 
+                post_time = datetime.fromtimestamp(submission.created_utc)
+                if datetime.now() - post_time > max_age:
+                    break
+
                 posts_checked += 1
 
                 # Skip if already commented
@@ -188,12 +215,13 @@ def run_bot(dry_run: bool = False):
                     continue
                 posts_passed_filters += 1
 
-                # Check topic relevance (keyword match)
+                # Check topic relevance (exact phrase match)
                 topic = post_is_relevant(submission, config)
                 if not topic:
                     continue
                 posts_matched_keywords += 1
-                print(f"  [EVAL] Checking: {submission.title[:60]}...")
+                matched = topic.get("_matched_phrase", "")
+                print(f"  [EVAL] phrase={matched!r} | {submission.title[:55]}...")
 
                 # Generate comment
                 try:
@@ -202,6 +230,7 @@ def run_bot(dry_run: bool = False):
                         submission_body=submission.selftext or "",
                         topic=topic,
                         config=config,
+                        matched_phrase=topic.get("_matched_phrase"),
                     )
                 except Exception as e:
                     print(f"  [ERROR] Failed to generate comment for {submission.id}: {e}")

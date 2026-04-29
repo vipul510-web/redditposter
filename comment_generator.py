@@ -14,11 +14,10 @@ def generate_comment(
     submission_body: str,
     topic: dict[str, Any],
     config: Config,
+    matched_phrase: str | None = None,
 ) -> str | None:
     """
-    Uses OpenAI to:
-    1. Assess if the post is about AI visibility, ChatGPT, or AEO - if not, returns None (skip)
-    2. If relevant, generates a helpful comment with subtle app hint and DM offer
+    OpenAI decides if the post fits our product; if yes, writes a human, contextual comment.
     """
     try:
         from openai import OpenAI
@@ -30,49 +29,66 @@ def generate_comment(
         raise ValueError("OPENAI_API_KEY not set in environment")
 
     client = OpenAI(api_key=api_key)
-    app = config.shopify_app or {}
+    app = config.product or {}
     app_name = app.get("name", "")
     app_desc = app.get("description", "")
     app_url = app.get("url", "")
 
-    prompt = f"""You are a helpful Reddit user. Your task has TWO parts:
+    match_line = ""
+    if matched_phrase:
+        match_line = f'The post matched our monitor phrase: "{matched_phrase}" (still verify fit below).\n'
 
-PART 1 - ASSESS: Is this post specifically asking about AI visibility, visibility on ChatGPT, AEO (Answer Engine Optimization), AI SEO, or ranking on AI platforms?
+    prompt = f"""You are a helpful Reddit user. Your task has TWO parts.
 
-- If NO (e.g. American Eagle Outfitters work, schedules, unrelated topics) → respond with exactly: SKIP
-- If YES (they're asking about AI/ChatGPT visibility, AEO, etc.) → proceed to Part 2
+{match_line}
+PART 1 — FIT CHECK: Read the full post. Should someone from our side comment in a way that helps the OP?
 
-PART 2 - COMMENT: If relevant, you must:
-1. UNDERSTAND the actual question or content in the post - read it carefully
-2. FRAME a helpful answer that directly addresses what they asked - be specific, not generic
-3. SOUND HUMAN - write like a real person sharing experience, not a bot or marketer. Use casual language, contractions, natural phrasing.
-4. Optionally slide in our app when it naturally fits: "{app_name}" ({app_url}) - {app_desc}
-   - Only mention it when it genuinely helps answer their question
-   - Be subtle: "I've been using [app name] for this" or "something like [app] might help" - never pushy
-   - If it doesn't fit, skip the mention and just give helpful insights
-5. End with: "Happy to discuss more over DM if you'd like."
-6. Under 150 words. No "As an AI" or similar.
+We offer: "{app_name}" — {app_url} — {app_desc}
+
+Comment ONLY if the post is genuinely about something we can help with, for example:
+- WhatsApp Business API, webhooks, sending messages from code (Node, Python, etc.)
+- Twilio WhatsApp, cost, or "too expensive" / alternatives
+- Wati, Aisensy, or similar tool alternatives or pricing
+- WhatsApp + dev tools (Cursor, Lovable, MCP, Claude Code, Codex) when the question ties to WhatsApp integration or messaging
+- Lead capture, forms, surveys, drip campaigns over WhatsApp
+- Setting up or costing WhatsApp Business API
+
+Do NOT comment if:
+- The post is only loosely related (e.g. generic Cursor/Lovable/SaaS chat with no WhatsApp/messaging angle)
+- It is a job ad, meme, unrelated rant, or anything where a product mention would feel spammy
+- You are not confident we add real value
+
+If NO → respond with exactly: SKIP
+If YES → go to Part 2.
+
+PART 2 — COMMENT (only if YES):
+1. Understand the specific question or problem in the post.
+2. Write a short, useful reply (2–5 sentences) that directly helps — concrete, not generic.
+3. Sound human: casual tone, contractions, no marketing speak.
+4. Mention "{app_name}" or {app_url} only if it fits naturally (e.g. "we've been using…" or "something like Gavi might help with webhooks"). If it would feel forced, skip the plug and just help — but then prefer SKIP in Part 1 if there's nothing useful to say.
+5. You may end with: "Happy to chat over DM if useful."
+6. Under 180 words. Never start with "As an AI". No "Comment:" prefix.
 
 Post title: {submission_title}
-Post body: {submission_body[:1000]}
+Post body: {submission_body[:1200]}
 
-Respond with either SKIP or your comment. Output ONLY the raw comment text - no prefix like "Comment:" or labels."""
+Output ONLY SKIP or the comment text — nothing else."""
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=250,
-        temperature=0.6,
+        max_tokens=280,
+        temperature=0.55,
     )
     text = response.choices[0].message.content.strip()
 
-    if text.upper().strip() == "SKIP":
+    first = text.split("\n")[0].strip().upper().rstrip(".")
+    if first == "SKIP":
         return None
 
-    # Strip any prefix the model might add (e.g. "Comment:", "Comment: ")
     for prefix in ("Comment:", "Comment：", "comment:", "Comment: "):
         if text.lower().startswith(prefix.lower()):
-            text = text[len(prefix):].strip()
+            text = text[len(prefix) :].strip()
             break
 
     return text

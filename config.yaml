@@ -1,47 +1,58 @@
-# Reddit Comment Bot Configuration
-# Target: r/aeo - posts about AI visibility, ChatGPT visibility, AEO
-# OpenAI assesses each post and decides whether to comment or not
+# Reddit Comment Bot — Gavi WhatsApp Automation (gaviventures.com)
+# Exact phrase match on keywords; OpenAI decides if we should comment.
 
 subreddits:
-  - aeo
-  - shopify_geeks
-  - ecommerce
-  - ShopifyeCommerce
+  - whatsappbusinessapi
+  - whatsapp
+  - lovable
+  - cursor
+  - vibecoding
+  - indiehackers
+  - saas
+  - sideproject
 
-# Initial keyword filter - casts a net for potentially relevant posts
-# OpenAI then decides if the post is actually worth replying to
 topics:
-  - name: "AI visibility / ChatGPT / AEO"
+  - name: "WhatsApp API / automation / Gavi fit"
+    # Exact phrase: full phrase must appear in title/body (case-insensitive), not isolated partial words
     keywords:
-      - "AI visibility"
-      - "ChatGPT visibility"
-      - "AEO"
-      - "AI SEO"
-      - "LLM"
-      - "visibility on ChatGPT"
-      - "ChatGPT ranking"
-      - "AI platforms"
-      - "AI traffic"
-      - "Answer Engine"
+      - "whatsapp api"
+      - "whatsapp mcp"
+      - "whatsapp cursor"
+      - "whatsapp claude code"
+      - "whatsapp codex"
+      - "whatsapp lovable"
+      - "twilio whatsapp"
+      - "twilio expensive"
+      - "whatsapp business api developer"
+      - "whatsapp webhook"
+      - "whatsapp node js"
+      - "whatsapp python"
+      - "how to send whatsapp from"
+      - "whatsapp api alternative"
+      - "whatsapp form"
+      - "whatsapp survey"
+      - "whatsapp lead capture"
+      - "whatsapp drip"
+      - "whatsapp business api setup"
+      - "whatsapp business api cost"
+      - "wati alternative"
+      - "wati pricing"
+      - "aisensy alternative"
+    comment_guidance: "Help first; mention Gavi only if it genuinely fits."
 
-    comment_guidance: "Give genuine insights. Subtly plug the app only when it naturally helps."
+product:
+  name: "Gavi WhatsApp Automation"
+  description: "WhatsApp Business API automation from Gavi Ventures — webhooks, messaging flows, lower-cost Twilio-style setup, alternatives to Wati/Aisensy for builders and SaaS."
+  url: "https://gaviventures.com"
 
-# Shopify app - GPT Shopify App
-# https://apps.shopify.com/llm-analytics
-shopify_app:
-  name: "GPT Shopify App"
-  description: "Shopify app for AI visibility, ChatGPT ranking, AEO, AI SEO Audit, LLM.txt. Tracks visibility on ChatGPT & AI platforms, helps brands rank on AI."
-  url: "https://apps.shopify.com/llm-analytics"
-
-# Bot behavior settings
-# Runs once daily, picks up 10 most recent posts from the day
 settings:
   min_post_score: 0
-  max_post_age_hours: 24      # Only posts from the last 24 hours (today)
+  max_post_age_hours: 2        # Posts from the last ~2 hours only
   min_author_karma: 0
-  max_existing_comments: 30
+  max_existing_comments: 40
   post_sort: "new"
-  posts_per_subreddit: 10     # Recent 10 posts only
-  delay_between_comments: 300
-  max_comments_per_run: 5     # Max comments per run (safety cap)
+  posts_per_subreddit: 100     # Scan until we hit posts older than max_post_age_hours
+  exact_phrase_match: true     # Require full phrase in post (see reddit_bot)
+  delay_between_comments: 180
+  max_comments_per_run: 10
   skip_already_commented: true

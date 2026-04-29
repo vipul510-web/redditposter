@@ -17,7 +17,7 @@ class Config:
     subreddits: list[str]
     topics: list[dict[str, Any]]
     settings: dict[str, Any]
-    shopify_app: dict[str, Any]
+    product: dict[str, Any]
 
 
 def load_config(path: Path | None = None) -> Config:
@@ -29,9 +29,11 @@ def load_config(path: Path | None = None) -> Config:
     with open(path) as f:
         data = yaml.safe_load(f)
 
+    product = data.get("product") or data.get("shopify_app", {})
+
     return Config(
         subreddits=data.get("subreddits", []),
         topics=data.get("topics", []),
         settings=data.get("settings", {}),
-        shopify_app=data.get("shopify_app", {}),
+        product=product,
     )
