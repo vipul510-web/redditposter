@@ -47,7 +47,7 @@ product:
 
 settings:
   min_post_score: 0
-  max_post_age_hours: 2        # Posts from the last ~2 hours only
+  max_post_age_hours: 24       # Posts from the last 24 hours
   min_author_karma: 0
   max_existing_comments: 40
   post_sort: "new"
